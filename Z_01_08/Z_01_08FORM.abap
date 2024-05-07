@@ -300,10 +300,10 @@ FORM sort_list  USING P_FLAG.
     LV_FIELD_NAME = LV_FIELD+9(*) .
 
     IF P_FLAG = 'UP' .
-        " ( ) 表示取变量的值
-        SORT GT_TOTAL BY (LV_FIELD_NAME) .
+        " ( ) 表示取变量的值, 根据点击到的值所在的列字段排序
+        SORT GT_TOTAL BY (LV_FIELD_NAME) ASCENDING .
     ELSEIF P_FLAG = 'DOWN' .
-        SORT GT_TOTAL BY (LV_FIELD_NAME) .
+        SORT GT_TOTAL BY (LV_FIELD_NAME) DESCENDING .
     ENDIF .
 
     " 输出结果
