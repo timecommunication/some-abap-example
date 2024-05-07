@@ -14,7 +14,7 @@ ZSTUDENT_TABLE
 
 
 
-### SE80 中对应程序的 GUI STATUS 设置
+### SE80 中对应程序的 GUI STATUS 和 GUI TITLE 设置
 
 1
 
@@ -26,7 +26,9 @@ ZSTUDENT_TABLE
 
 ![gui-status2](./doc-pic/gui-status2.png)
 
+3
 
+![gui-title](./doc-pic/gui-title.png)
 
 
 
