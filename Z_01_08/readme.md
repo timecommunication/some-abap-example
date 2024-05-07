@@ -4,13 +4,13 @@
 
 ZSCHOOL_TABLE 
 
-![school-table](.\doc-pic\school-table.png)
+![school-table](./doc-pic/school-table.png)
 
 
 
 ZSTUDENT_TABLE
 
-![student-table](.\doc-pic\student-table.png)
+![student-table](./doc-pic/student-table.png)
 
 
 
@@ -18,13 +18,13 @@ ZSTUDENT_TABLE
 
 1
 
-![gui-status1](.\doc-pic\gui-status1.png)
+![gui-status1](./doc-pic/gui-status1.png)
 
 
 
 2
 
-![gui-status2](.\doc-pic\gui-status2.png)
+![gui-status2](./doc-pic/gui-status2.png)
 
 
 
@@ -32,7 +32,7 @@ ZSTUDENT_TABLE
 
 ### 查询界面
 
-![query](.\doc-pic\query.png)
+![query](./doc-pic/query.png)
 
 
 
@@ -40,11 +40,13 @@ ZSTUDENT_TABLE
 
 列表
 
-![display](.\doc-pic\display.png)
+双击学校代码进入详情
+
+![display](./doc-pic/display.png)
 
 
 
 详情
 
-![school-detail](.\doc-pic\school-detail.png)
+![school-detail](./doc-pic/school-detail.png)
 
