@@ -4,7 +4,7 @@
 
 ZSCHOOL_TABLE 
 
-![school-table](.\doc-pic\school-table.png)
+![school-table](./doc-pic/school-table.png)
 
 
 
