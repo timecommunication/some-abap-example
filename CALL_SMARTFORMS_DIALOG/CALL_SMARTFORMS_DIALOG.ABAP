@@ -1,0 +1,210 @@
+*&---------------------------------------------------------------------*
+*& Report Z0617_H10009
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT Z0617_H10009.
+
+DATA FUNC_NAME TYPE RS38L_FNAM.
+DATA: LS_CONTROL TYPE SSFCTRLOP,
+      LS_OUTPUT TYPE SSFCOMPOP,
+      LS_JOBOUT TYPE SSFCRESOP,
+      LS_RETURN TYPE SSFCRESCL.
+
+DATA: LT_BKPF TYPE TABLE OF ZT0616A_H10009,
+      LS_BKPF_INIT TYPE ZT0616A_H10009.
+
+DATA: LV_WRBTRSUM_H TYPE WRBTR,
+      LV_WRBTRSUM_S TYPE WRBTR.
+
+
+DATA LS_HEADER TYPE ZT0616A_H10009.
+
+
+PARAMETERS: GV_BUKRS TYPE BUKRS OBLIGATORY,
+            GV_BELNR TYPE BKPF-BELNR MATCHCODE OBJECT ZVH_0617_H10009 OBLIGATORY ,
+            GV_GJAHR TYPE BKPF-GJAHR OBLIGATORY .
+
+
+SELECT BKPF~BELNR , BKTXT, BKPF~WAERS , BKPF~BLDAT, BKPF~USNAM,
+  BSEG~SAKNR, BSEG~WRBTR, SHKZG, BSEG~ZZLIUY1,
+  BKPF~BUKRS, SKAT~TXT20, T001~BUTXT
+  FROM BKPF
+  LEFT OUTER JOIN BSEG
+  ON BKPF~BELNR = BSEG~BELNR
+  AND BKPF~GJAHR = BSEG~GJAHR
+  AND BKPF~BUKRS = BSEG~BUKRS
+*  AND BKTXT <> ''
+*  AND SAKNR <> ''
+  LEFT OUTER JOIN T001
+  ON T001~BUKRS = BKPF~BUKRS
+
+  LEFT OUTER JOIN SKAT
+  ON T001~KTOPL = SKAT~KTOPL
+  AND SKAT~SAKNR = BSEG~SAKNR
+*  AND SKAT~TXT20 <> ''
+
+  INTO CORRESPONDING FIELDS OF TABLE @LT_BKPF
+  WHERE BKPF~BELNR = @GV_BELNR
+    AND BKPF~BUKRS = @GV_BUKRS
+    AND BKPF~GJAHR = @GV_GJAHR
+  ORDER BY BKTXT DESCENDING  .
+
+
+
+READ TABLE LT_BKPF INTO DATA(LS_BKPF) INDEX 1.
+MOVE-CORRESPONDING LS_BKPF TO LS_HEADER.
+
+
+
+* 制单
+IF ( LS_HEADER-blart = 'ZB' OR LS_HEADER-blart = 'ZG' OR LS_HEADER-blart = 'ZJ' OR LS_HEADER-blart = 'ZR' )
+AND LS_HEADER-zzliuy1 IS NOT INITIAL.
+    LS_HEADER-ZZD = LS_HEADER-zzliuy1.
+ELSEIF NOT ( LS_HEADER-blart = 'ZB' OR LS_HEADER-blart = 'ZG' OR LS_HEADER-blart = 'ZJ' OR LS_HEADER-blart = 'ZR' ).
+    LS_HEADER-ZZD = '系统'.
+ENDIF.
+
+* 记账
+LS_HEADER-ZJZ = LS_HEADER-usnam.
+
+**  出纳
+IF ( LS_HEADER-blart = 'ZB' OR LS_HEADER-blart = 'ZG' OR LS_HEADER-blart = 'ZJ' OR LS_HEADER-blart = 'ZR' )
+AND LS_HEADER-zzliuy2 IS NOT INITIAL.
+    LS_HEADER-ZCN = LS_HEADER-zzliuy2.
+ELSE.
+*  其他凭证类型为空
+ENDIF.
+
+
+SELECT SINGLE zappr_usr FROM ztfi_bip_approve
+    WHERE BUKRS = @LS_HEADER-BUKRS
+    AND BELNR = @LS_HEADER-BELNR
+    AND GJAHR = @LS_HEADER-GJAHR
+    INTO @LS_HEADER-ZAPR.
+
+
+CLEAR: LV_WRBTRSUM_H,
+       LV_WRBTRSUM_S.
+
+
+LOOP AT LT_BKPF INTO LS_BKPF.
+  IF LS_BKPF-SHKZG = 'H'.
+    LV_WRBTRSUM_H += LS_BKPF-WRBTR.
+  ELSEIF LS_BKPF-SHKZG = 'S'.
+    LV_WRBTRSUM_S += LS_BKPF-WRBTR.
+  ENDIF.
+ENDLOOP.
+
+
+DESCRIBE TABLE LT_BKPF LINES DATA(LV_COUNT).
+READ TABLE LT_BKPF INTO LS_BKPF INDEX LV_COUNT.
+
+" SMARTFORMS 中，每10行一页，补全到 10 的倍数
+DATA(LV_APPEND) = 10 - ( LV_COUNT MOD 10 ).
+DO LV_APPEND TIMES.
+  CLEAR: LS_BKPF_INIT.
+  APPEND LS_BKPF_INIT TO LT_BKPF.
+ENDDO.
+
+LT_BKPF[ lines( LT_BKPF ) ]-IS_LAST_DATA = 'X'.
+
+
+
+" 通过SMARTFORMS的名称 获取对应的函数名称
+CALL FUNCTION 'SSF_FUNCTION_MODULE_NAME'
+  EXPORTING
+    FORMNAME                 = 'ZSF0616_BKPF_H10009'
+*   VARIANT                  = ' '
+*   DIRECT_CALL              = ' '
+ IMPORTING
+   FM_NAME                  = FUNC_NAME
+ EXCEPTIONS
+   NO_FORM                  = 1
+   NO_FUNCTION_MODULE       = 2
+   OTHERS                   = 3.
+IF SY-SUBRC <> 0.
+* Implement suitable error handling here
+ENDIF.
+
+" 开启打印对话框的一些配置
+LS_OUTPUT-TDNEWID = 'X'.
+LS_OUTPUT-TDIMMED = 'X'.
+LS_OUTPUT-TDDELETE = 'X'.
+LS_OUTPUT-TDFINAL = 'X'.
+LS_OUTPUT-TDIEXIT = 'X'.
+LS_OUTPUT-TDDEST = 'LP01'.
+LS_CONTROL-LANGU = '1'.
+LS_CONTROL-PREVIEW = 'X' .
+*LS_CONTROL-NO_DIALOG = ' '.
+LS_CONTROL-NO_OPEN = 'X' .
+LS_CONTROL-NO_CLOSE = 'X' .
+
+" 打开对话框，等待用户调整设置后打印
+CALL FUNCTION 'SSF_OPEN'
+ EXPORTING
+*   ARCHIVE_PARAMETERS       =
+   USER_SETTINGS            = ''
+*   MAIL_SENDER              =
+*   MAIL_RECIPIENT           =
+*   MAIL_APPL_OBJ            =
+   OUTPUT_OPTIONS           = LS_OUTPUT
+   CONTROL_PARAMETERS       = LS_CONTROL
+ IMPORTING
+   JOB_OUTPUT_OPTIONS       = LS_JOBOUT
+ EXCEPTIONS
+   FORMATTING_ERROR         = 1
+   INTERNAL_ERROR           = 2
+   SEND_ERROR               = 3
+   USER_CANCELED            = 4
+   OTHERS                   = 5.
+
+IF SY-SUBRC <> 0.
+* Implement suitable error handling here
+ENDIF.
+
+" 调用打印过程
+CALL FUNCTION FUNC_NAME
+ EXPORTING
+*   ARCHIVE_INDEX              =
+*   ARCHIVE_INDEX_TAB          =
+*   ARCHIVE_PARAMETERS         =
+   CONTROL_PARAMETERS         = LS_CONTROL
+*   MAIL_APPL_OBJ              =
+*   MAIL_RECIPIENT             =
+*   MAIL_SENDER                =
+   OUTPUT_OPTIONS             = LS_OUTPUT
+*   USER_SETTINGS              = 'X'
+* IMPORTING
+*   DOCUMENT_OUTPUT_INFO       =
+*   JOB_OUTPUT_INFO            =
+*   JOB_OUTPUT_OPTIONS         =
+  IS_HEADER = LS_HEADER
+  IV_WRBTRSUM_H = LV_WRBTRSUM_H
+  IV_WRBTRSUM_S = LV_WRBTRSUM_S
+  TABLES
+    IT_BKPF                    = LT_BKPF
+ EXCEPTIONS
+   FORMATTING_ERROR           = 1
+   INTERNAL_ERROR             = 2
+   SEND_ERROR                 = 3
+   USER_CANCELED              = 4
+   OTHERS                     = 5
+          .
+IF SY-SUBRC <> 0.
+* Implement suitable error handling here
+ENDIF.
+
+" 打印结束后 关闭会话
+CALL FUNCTION 'SSF_CLOSE'
+ IMPORTING
+   JOB_OUTPUT_INFO        = LS_RETURN
+ EXCEPTIONS
+   FORMATTING_ERROR       = 1
+   INTERNAL_ERROR         = 2
+   SEND_ERROR             = 3
+   OTHERS                 = 4
+          .
+IF SY-SUBRC <> 0.
+* Implement suitable error handling here
+ENDIF.
