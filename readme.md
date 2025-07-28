@@ -78,3 +78,15 @@ NATVIE SQL 和 CLASS SQL 的使用
 ### CALL_BDC
 
 调用 BDC 的程序
+
+
+
+### FUNC_CONV_NUM_TO_CHINESE
+
+数字转换为中文大写数字
+
+
+
+### ADD_FIELD_TO_TABLE_TYPE_IN_RUNTIME
+
+在程序运行时，给内表添加一列 
