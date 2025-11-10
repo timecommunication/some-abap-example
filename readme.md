@@ -90,3 +90,11 @@ NATVIE SQL 和 CLASS SQL 的使用
 ### ADD_FIELD_TO_TABLE_TYPE_IN_RUNTIME
 
 在程序运行时，给内表添加一列 
+
+
+
+
+
+### CDS_TABLE_FUNCTION
+
+包含一个简单的 CDS Table Function , 和一个 带参数的 CDS Table Function , 使用 AMDP 的实现方式 
