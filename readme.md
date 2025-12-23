@@ -98,3 +98,13 @@ NATVIE SQL 和 CLASS SQL 的使用
 ### CDS_TABLE_FUNCTION
 
 包含一个简单的 CDS Table Function , 和一个 带参数的 CDS Table Function , 使用 AMDP 的实现方式 
+
+
+
+
+
+
+
+### IMPORT_EXCEL_TO_TABLE_DATA_BY_COLUMN_SEQUENCE
+
+按 EXCEL 列的顺序 读取表格数据，不用在表头写 字段在程序中对应的具体的名称
