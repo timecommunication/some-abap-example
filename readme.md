@@ -56,6 +56,10 @@ NATVIE SQL 和 CLASS SQL 的使用
 缓存表和缓存的使用程序
 
 
+### TRANSPORT_COPY_OF_REQUEST
+
+一个制作副本请求的程序
+
 
 ### THREAD
 
